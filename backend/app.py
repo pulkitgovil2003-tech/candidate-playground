@@ -26,6 +26,15 @@ profile = {
     }
 }
 
+@app.route("/", methods=["GET"])
+def home():
+    return {
+        "message": "Candidate Playground API is running",
+        "health": "/health",
+        "profile": "/profile",
+        "projects": "/projects"
+    }
+
 @app.route("/health")
 def health():
     return {"status": "ok"}
@@ -42,7 +51,14 @@ def get_projects_by_skill():
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT title, description, link FROM projects")
+    if skill:
+        cursor.execute("""
+            SELECT title, description, links
+            FROM projects
+            WHERE skills LIKE ?
+        """, (f"%{skill}%",))
+    else:
+        cursor.execute("SELECT title, description, links FROM projects")
 
     rows = cursor.fetchall()
     conn.close()
@@ -51,11 +67,9 @@ def get_projects_by_skill():
         {
             "title": r[0],
             "description": r[1],
-            "link": r[2]
-        }
-        for r in rows
+            "links": r[2]
+        } for r in rows
     ])
-
 
     profile = cur.execute("SELECT * FROM profile WHERE id=1").fetchone()
     skills = cur.execute("SELECT name FROM skills").fetchall()
@@ -80,8 +94,5 @@ def get_projects_by_skill():
 
 
 if __name__ == "__main__":
-    import os
-port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port)
-
+    app.run(debug=True)
 
