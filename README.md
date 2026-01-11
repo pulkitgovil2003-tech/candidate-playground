@@ -21,7 +21,7 @@ A minimal full-stack playground that stores and exposes my candidate profile via
   https://candidate-playground-gqa9.onrender.com
 
 - **Frontend UI**:  
-  https://<your-frontend-render-url>
+  https://candidate-playground-1.onrender.com
 
 ---
 
