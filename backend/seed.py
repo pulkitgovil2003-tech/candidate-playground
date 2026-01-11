@@ -29,6 +29,15 @@ VALUES (?, ?, ?)
     "https://github.com/your-repo"
 ))
 
+cur.execute("""
+INSERT INTO work (company, role, description)
+VALUES (?, ?, ?)
+""", (
+    "Self Project",
+    "ML Developer",
+    "Built NLP-based Fake News Detection system"
+))
+
 conn.commit()
 conn.close()
 

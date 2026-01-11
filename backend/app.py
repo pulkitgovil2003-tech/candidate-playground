@@ -39,6 +39,12 @@ def init_db():
         description TEXT,
         link TEXT
     );
+CREATE TABLE IF NOT EXISTS work (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company TEXT,
+    role TEXT,
+    description TEXT
+);
     """)
 
     count = cur.execute("SELECT COUNT(*) FROM profile").fetchone()[0]
@@ -86,6 +92,7 @@ def get_profile():
     profile = cur.execute("SELECT * FROM profile LIMIT 1").fetchone()
     skills = cur.execute("SELECT name FROM skills").fetchall()
     projects = cur.execute("SELECT title, description, link FROM projects").fetchall()
+    work = cur.execute("SELECT company, role, description FROM work").fetchall()
 
     conn.close()
 
@@ -101,6 +108,13 @@ def get_profile():
                 "link": p["link"]
             } for p in projects
         ],
+        "work": [
+    {
+        "company": w["company"],
+        "role": w["role"],
+        "description": w["description"]
+    } for w in work
+],
         "links": {
             "github": profile["github"],
             "linkedin": profile["linkedin"],

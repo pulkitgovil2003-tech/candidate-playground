@@ -26,3 +26,9 @@ CREATE TABLE IF NOT EXISTS project_skills (
     FOREIGN KEY (project_id) REFERENCES projects(id),
     FOREIGN KEY (skill_id) REFERENCES skills(id)
 );
+CREATE TABLE IF NOT EXISTS work (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company TEXT,
+    role TEXT,
+    description TEXT
+);
