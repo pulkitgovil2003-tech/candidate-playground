@@ -5,16 +5,68 @@ import sqlite3
 app = Flask(__name__)
 CORS(app)
 
+DB = "database.db"
+
 def get_db():
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def init_db():
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.executescript("""
+    CREATE TABLE IF NOT EXISTS profile (
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        email TEXT,
+        education TEXT,
+        github TEXT,
+        linkedin TEXT,
+        portfolio TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS skills (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        description TEXT,
+        link TEXT
+    );
+    """)
+
+    count = cur.execute("SELECT COUNT(*) FROM profile").fetchone()[0]
+    if count == 0:
+        cur.execute("""
+            INSERT INTO profile
+            (name, email, education, github, linkedin, portfolio)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            "Pulkit Govil",
+            "pulkitgovil2003@gmail.com",
+            "B.Tech Computer Science",
+            "https://github.com/pulkitgovil2003-tech",
+            "https://linkedin.com/in/your-profile",
+            "https://your-portfolio.com"
+        ))
+
+    conn.commit()
+    conn.close()
+
+
+init_db()
 
 
 @app.route("/")
 def home():
     return {
-        "message": "Candidate Playground API is running",
+        "message": "Candidate Playground API running",
         "health": "/health",
         "profile": "/profile",
         "projects": "/projects"
@@ -25,24 +77,17 @@ def home():
 def health():
     return {"status": "ok"}
 
+
 @app.route("/profile")
 def get_profile():
     conn = get_db()
     cur = conn.cursor()
 
-    profile = cur.execute(
-        "SELECT name, email, education, github, linkedin, portfolio FROM profile LIMIT 1"
-    ).fetchone()
-
+    profile = cur.execute("SELECT * FROM profile LIMIT 1").fetchone()
     skills = cur.execute("SELECT name FROM skills").fetchall()
-    projects = cur.execute(
-        "SELECT title, description, link FROM projects"
-    ).fetchall()
+    projects = cur.execute("SELECT title, description, link FROM projects").fetchall()
 
     conn.close()
-
-    if profile is None:
-        return jsonify({"error": "Profile not found"})
 
     return jsonify({
         "name": profile["name"],
@@ -62,6 +107,7 @@ def get_profile():
             "portfolio": profile["portfolio"]
         }
     })
+
 
 @app.route("/projects")
 def get_projects():
