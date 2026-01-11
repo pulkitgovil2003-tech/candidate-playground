@@ -1,21 +1,72 @@
-# Candidate Profile Playground
+# Candidate Playground
 
-## Goal
-A minimal full-stack playground that stores my candidate profile in a database
-and exposes it via a small API and basic frontend.
+A minimal full-stack playground that stores and exposes my candidate profile via a REST API and a basic frontend UI.
 
-## Tech Stack
-- Backend: Flask (Python)
-- Database: SQLite
-- Frontend: HTML + JavaScript
-- Hosting: Render (Backend), Netlify (Frontend)
+---
 
-## Features (Planned)
-- CRUD API for profile
-- Query projects by skill
-- Search endpoint
-- Health check
-- Minimal frontend UI
+## 🧱 Architecture
 
-## Status
-🚧 Work in progress
+- **Backend**: Flask (Python)
+- **Database**: SQLite
+- **Frontend**: Plain HTML + JavaScript
+- **Hosting**:
+  - Backend: Render Web Service
+  - Frontend: Render Static Site
+
+---
+
+## 🌐 Live URLs
+
+- **Backend API**:  
+  https://candidate-playground-gqa9.onrender.com
+
+- **Frontend UI**:  
+  https://<your-frontend-render-url>
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|------|---------|------------|
+| GET | `/health` | Liveness check |
+| GET | `/profile` | Fetch candidate profile |
+| GET | `/projects` | List all projects |
+| GET | `/search?q=` | Search projects |
+
+---
+
+## 🗄 Database Schema
+
+### `profile`
+- id
+- name
+- email
+- education
+- github
+- linkedin
+- portfolio
+
+### `skills`
+- id
+- name
+
+### `projects`
+- id
+- title
+- description
+- link
+
+---
+
+## ⚙ Local Setup
+
+```bash
+git clone https://github.com/pulkitgovil2003-tech/candidate-playground.git
+cd backend
+
+python -m venv venv
+venv\Scripts\activate
+pip install flask flask-cors
+
+python app.py
