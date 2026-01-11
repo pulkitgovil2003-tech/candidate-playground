@@ -3,30 +3,15 @@ from flask_cors import CORS
 import sqlite3
 
 app = Flask(__name__)
+CORS(app)
+
 def get_db():
-    return sqlite3.connect("database.db")
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
 
-CORS(app)  
-profile = {
-    "name": "Pulkit Govil",
-    "email": "your-email@example.com",
-    "education": "B.Tech Computer Science",
-    "skills": ["Python", "Flask", "SQL", "Machine Learning"],
-    "projects": [
-        {
-            "title": "Fake News Detection",
-            "description": "NLP based fake news classification system",
-            "link": "https://github.com/your-repo"
-        }
-    ],
-    "links": {
-        "github": "https://github.com/pulkitgovil2003-tech",
-        "linkedin": "https://linkedin.com/in/your-profile",
-        "portfolio": "https://your-portfolio.com"
-    }
-}
 
-@app.route("/", methods=["GET"])
+@app.route("/")
 def home():
     return {
         "message": "Candidate Playground API is running",
@@ -35,49 +20,31 @@ def home():
         "projects": "/projects"
     }
 
+
 @app.route("/health")
 def health():
     return {"status": "ok"}
 
-@app.route("/profile", methods=["GET"])
+@app.route("/profile")
 def get_profile():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
+    conn = get_db()
     cur = conn.cursor()
 
-@app.route("/projects")
-def get_projects_by_skill():
-    skill = request.args.get("skill")
-    conn = get_db()
-    cursor = conn.cursor()
+    profile = cur.execute(
+        "SELECT name, email, education, github, linkedin, portfolio FROM profile LIMIT 1"
+    ).fetchone()
 
-    if skill:
-        cursor.execute("""
-            SELECT title, description, links
-            FROM projects
-            WHERE skills LIKE ?
-        """, (f"%{skill}%",))
-    else:
-        cursor.execute("SELECT title, description, links FROM projects")
-
-    rows = cursor.fetchall()
-    conn.close()
-
-    return jsonify([
-        {
-            "title": r[0],
-            "description": r[1],
-            "links": r[2]
-        } for r in rows
-    ])
-
-    profile = cur.execute("SELECT * FROM profile WHERE id=1").fetchone()
     skills = cur.execute("SELECT name FROM skills").fetchall()
-    projects = cur.execute("SELECT title, description, link FROM projects").fetchall()
+    projects = cur.execute(
+        "SELECT title, description, link FROM projects"
+    ).fetchall()
 
     conn.close()
 
-    return {
+    if profile is None:
+        return jsonify({"error": "Profile not found"})
+
+    return jsonify({
         "name": profile["name"],
         "email": profile["email"],
         "education": profile["education"],
@@ -88,11 +55,33 @@ def get_projects_by_skill():
                 "description": p["description"],
                 "link": p["link"]
             } for p in projects
-        ]
-    }
+        ],
+        "links": {
+            "github": profile["github"],
+            "linkedin": profile["linkedin"],
+            "portfolio": profile["portfolio"]
+        }
+    })
 
+@app.route("/projects")
+def get_projects():
+    conn = get_db()
+    cur = conn.cursor()
+
+    rows = cur.execute(
+        "SELECT title, description, link FROM projects"
+    ).fetchall()
+
+    conn.close()
+
+    return jsonify([
+        {
+            "title": r["title"],
+            "description": r["description"],
+            "link": r["link"]
+        } for r in rows
+    ])
 
 
 if __name__ == "__main__":
-     app.run()
-
+    app.run(host="0.0.0.0", port=5000)
