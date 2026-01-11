@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Candidate Playground</title>
+</head>
+<body>
+    <h1>My Profile</h1>
+    <pre id="profile"></pre>
+
+    <h2>Projects</h2>
+    <button onclick="loadProjects()">Load Projects</button>
+    <pre id="projects"></pre>
+
+    <h2>Search</h2>
+    <input id="q" placeholder="search projects">
+    <button onclick="search()">Search</button>
+    <pre id="results"></pre>
+
+<script>
+const API = "http://localhost:5000";
+
+fetch(API + "/profile")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("profile").innerText =
+      JSON.stringify(data, null, 2);
+  });
+
+function loadProjects() {
+  fetch(API + "/projects")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("projects").innerText =
+        JSON.stringify(data, null, 2);
+    });
+}
+
+function search() {
+  const q = document.getElementById("q").value;
+  fetch(API + "/search?q=" + q)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("results").innerText =
+        JSON.stringify(data, null, 2);
+    });
+}
+</script>
+</body>
+</html>
