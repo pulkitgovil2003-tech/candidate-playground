@@ -5,7 +5,7 @@
 </head>
 <body>
     <h1>My Profile</h1>
-    <pre id="profile"></pre>
+     <div id="profile">Loading profile...</div>
 
     <h2>Projects</h2>
     <button onclick="loadProjects()">Load Projects</button>
@@ -15,19 +15,42 @@
     <input id="q" placeholder="search projects">
     <button onclick="search()">Search</button>
     <pre id="results"></pre>
-
+    <h3 id="health">Checking backend...</h3>
 <script>
-const API = "http://localhost:5000";
-
-fetch(API + "/profile")
-  .then(res => res.json())
+const API_BASE = "https://candidate-playground-gqa9.onrender.com";
+fetch(`${API_BASE}/health`)
+  .then(res => {
+    if (!res.ok) throw new Error("Health check failed");
+    return res.json();
+  })
   .then(data => {
-    document.getElementById("profile").innerText =
-      JSON.stringify(data, null, 2);
+    document.getElementById("health").innerText =
+      "Backend Status: " + data.status;
+  })
+  .catch(err => {
+    document.getElementById("health").innerText =
+      "Backend Status:  unreachable";
+    console.error(err);
   });
 
+fetch(`${API_BASE}/profile`)
+  .then(res => res.json())
+  .then(profile => {
+    document.getElementById("profile").innerHTML = `
+      <p><b>Name:</b> ${profile.name}</p>
+      <p><b>Email:</b> ${profile.email}</p>
+      <p><b>Education:</b> ${profile.education}</p>
+      <p>
+        <a href="${profile.github}" target="_blank">GitHub</a> |
+        <a href="${profile.linkedin}" target="_blank">LinkedIn</a> |
+        <a href="${profile.portfolio}" target="_blank">Portfolio</a>
+      </p>
+    `;
+  });
+
+
 function loadProjects() {
-  fetch(API + "/projects")
+  fetch(`${API_BASE}/projects`)
     .then(res => res.json())
     .then(data => {
       document.getElementById("projects").innerText =
@@ -37,7 +60,7 @@ function loadProjects() {
 
 function search() {
   const q = document.getElementById("q").value;
-  fetch(API + "/search?q=" + q)
+  fetch(`${API_BASE}/search?q=${q}`)
     .then(res => res.json())
     .then(data => {
       document.getElementById("results").innerText =
